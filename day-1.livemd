@@ -1,0 +1,163 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 1: Secret Entrance
+
+```elixir
+Mix.install([
+  {:kino_aoc, "~> 0.1.7"}
+])
+```
+
+## Part One
+
+The Elves have good news and bad news.
+
+The good news is that they've discovered [project management](https://en.wikipedia.org/wiki/Project_management)! This has given them the tools they need to prevent their usual Christmas emergency. For example, they now know that the North Pole decorations need to be finished soon so that other critical tasks can start on time.
+
+The bad news is that they've realized they have a _different_ emergency: according to their resource planning, none of them have any time left to decorate the North Pole!
+
+To save Christmas, the Elves need _you_ to _finish decorating the North Pole by December 12th_.
+
+Collect stars by solving puzzles. Two puzzles will be made available on each day; the second puzzle is unlocked when you complete the first. Each puzzle grants _one star_. Good luck!
+
+You arrive at the secret entrance to the North Pole base ready to start decorating. Unfortunately, the _password_ seems to have been changed, so you can't get in. A document taped to the wall helpfully explains:
+
+"Due to new security protocols, the password is locked in the safe below. Please see the attached document for the new combination."
+
+The safe has a dial with only an arrow on it; around the dial are the numbers `0` through `99` in order. As you turn the dial, it makes a small _click_ noise as it reaches each number.
+
+The attached document (your puzzle input) contains a sequence of _rotations_, one per line, which tell you how to open the safe. A rotation starts with an `L` or `R` which indicates whether the rotation should be to the _left_ (toward lower numbers) or to the _right_ (toward higher numbers). Then, the rotation has a _distance_ value which indicates how many clicks the dial should be rotated in that direction.
+
+So, if the dial were pointing at `11`, a rotation of `R8` would cause the dial to point at `19`. After that, a rotation of `L19` would cause it to point at `0`.
+
+Because the dial is a circle, turning the dial _left from `0`_ one click makes it point at `99`. Similarly, turning the dial _right from `99`_ one click makes it point at `0`.
+
+So, if the dial were pointing at `5`, a rotation of `L10` would cause it to point at `95`. After that, a rotation of `R5` could cause it to point at `0`.
+
+The dial starts by pointing at `50`.
+
+You could follow the instructions, but your recent required official North Pole secret entrance security training seminar taught you that the safe is actually a decoy. The actual password is _the number of times the dial is left pointing at `0` after any rotation in the sequence_.
+
+For example, suppose the attached document contained the following rotations:
+
+```
+L68
+L30
+R48
+L5
+R60
+L55
+L1
+L99
+R14
+L82
+```
+
+Following these rotations would cause the dial to move as follows:
+
+* The dial starts by pointing at `50`.
+* The dial is rotated `L68` to point at `82`.
+* The dial is rotated `L30` to point at `52`.
+* The dial is rotated `R48` to point at _`0`_.
+* The dial is rotated `L5` to point at `95`.
+* The dial is rotated `R60` to point at `55`.
+* The dial is rotated `L55` to point at _`0`_.
+* The dial is rotated `L1` to point at `99`.
+* The dial is rotated `L99` to point at _`0`_.
+* The dial is rotated `R14` to point at `14`.
+* The dial is rotated `L82` to point at `32`.
+
+Because the dial points at `0` a total of three times during this process, the password in this example is _`3`_.
+
+Analyze the rotations in your attached document. _What's the actual password to open the door?_
+
+<!-- livebook:{"attrs":"eyJhc3NpZ25fdG8iOiJwdXp6bGVfaW5wdXQiLCJkYXkiOiIxIiwic2Vzc2lvbl9zZWNyZXQiOiJBT0MyMDI1X1NFU1NJT04iLCJ5ZWFyIjoiMjAyNSJ9","chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} =
+  KinoAOC.download_puzzle("2025", "1", System.fetch_env!("LB_AOC2025_SESSION"))
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:ok,
+ "R29\nL3\nL46\nL25\nL38\nR43\nL20\nR9\nL6\nL47\nL39\nR29\nR8\nR11\nL20\nL10\nL46\nL21\nR30\nL6\nL21\nL5\nR42\nR9\nL28\nR30\nL37\nR18\nR10\nL8\nR21\nR1\nR1\nL20\nL23\nR38\nR37\nL40\nR42\nR12\nL21\nR4\nL22\nR29\nR15\nR38\nL32\nL25\nL30\nL48\nR12\nR62\nR72\nL86\nL55\nL74\nR21\nR73\nL7\nL6\nR19\nL87\nL97\nL44\nR54\nR74\nR12\nR24\nR61\nL90\nR93\nR88\nL71\nL11\nR96\nL66\nR43\nL79\nR74\nR26\nR48\nL55\nR7\nR31\nL76\nR45\nR30\nR63\nL93\nR37\nL37\nL32\nL68\nL10\nL6\nL53\nL71\nR40\nR45\nR55\nR60\nR40\nL114\nL86\nL36\nL64\nR91\nL91\nL53\nR84\nL851\nL871\nR43\nR52\nL4\nR73\nL60\nL827\nR14\nL63\nR45\nL482\nL40\nL437\nL20\nL967\nR78\nL14\nL98\nL2\nR6\nR30\nL36\nR80\nR12\nL86\nL170\nL4\nR268\nL660\nL74\nR784\nL39\nL11\nR56\nR44\nR928\nR999\nL27\nR75\nL75\nR798\nL89\nR91\nR80\nL536\nR56\nR58\nR65\nR83\nR38\nR39\nL25\nR42\nL58\nL66\nR24\nL10\nL90\nL61\nR35\nL82\nR37\nR743\nL72\nL635\nR635\nL465\nL44\nL96\nR97\nR63\nL55\nR46\nL75\nL27\nL644\nL77\nL47\nL359\nL82\nR41\nR54\nR50\nL306\nR85\nR852\nR89\nL37\nL363\nR792\nR8\nL805\nR70\nR89\nL92\nR381\nL43\nR23\nL23\nR3\nR97\nL567\nR15\nL48\nR87\nR16\nR397\nR54\nR46\nL63\nL65\nL76\nL96\nR564\nR30\nL60\nR403\nR10\nR506\nR5\nR42\nR5\nL73\nL32\nL81\nR71\nR218\nR46\nL934\nR79\nL99\nL323\nR66\nL56\nR51\nR91\nL91\nR62\nR25\nR49\nL74\nR52\nR548\nR90\nR13\nL3\nL94\nL906\nR11\nL63\nR7\nL40\nL72\nL43\nR15\nL24\nL62\nR84\nR87\nR830\nR16\nL3\nR73\nR84\nL73\nL94\nL70\nR37\nL231\nR31\nR33\nR43\nL6\nL770\nL19\nR974\nL955\nR33\nR67\nL41\nL51\nR92\nL86\nR28\nL42\nR71\nL10\nL39\nL76\nR97\nR74\nL517\nL58\nL8\nL34\nR840\nL40\nL93\nR85\nR8\nR48\nL38\nL9\nR24\nL65\nR40\nL125\nL670\nR70\nL775\nR724\nR76\nL44\nR90\nL46\nL29\nL71\nL67\nL399\nR94\nL28\nR120\nL96\nR76\nL13\nR113\nR20\nL76\nL44\nL4\nR492\nL588\nL64\nL55\nR12\nR16\nL505\nL92\nR219\nR69\nR51\nL51\nR72\nL43\nL678\nR64\nR73\nR18\nR21\nL27\nR845\nR64\nR75\nL61\nR22\nL945\nR5\nR14\nR29\nR8\nR44\nL96\nL4\nL56\nL90\nL93\nR47\nR92\nR97\nL858\nL91\nL955\nR7\nR96\nR98\nR12\nR68\nR49\nR77\nR46\nL47\nL928\nL53\nR82\nR54\nL93\nL633\nL88\nR4\nR56\nL92\nL8\nR73\nL23\nR95\nR490\nR234\nR59\nL79\nL81\nL6\nL21\nR59\nL902\nL44\nR46\nR94\nR11\nL879\nR12\nR90\nL37\nL91\nR26\nR74\nR46\nL18\nL67\nR939\nR63\nR346\nL9\nL2\nL98\nL28\nL72\nR89\nR14\nL403\nR2\nR63\nL67\nL298\nR17\nR283\nL50\nR50\nL59\nL19\nL65\nL68\nL89\nR1\nL1\nL852\nL1\nR653\nL25\nL95\nL66\nL94\nR61\nR60\nR52\nL93\nL16\nL51\nR11\nL2\nR958\nR48\nR57\nL31\nL857\nR83\nR387\nL232\nR38\nL64\nL795\nR11\nL34\nL72\nR18\nR41\nL98\nL45\nL55\nL70\nR847\nL377\nL76\nR76\nL862\nR43\nR21\nL2\nL50\nL14\nR85\nR35\nR44\nL69\nR59\nL48\nL186\nL653\nL96\nL7\nL97\nL24\nL15\nL64\nL52\nL83\nR35\nL42\nR42\nR62\nL40\nL22\nR9\nL9\nL558\nR574\nL16\nR24\nL48\nL264\nL12\nL304\nR5\nR99\nL61\nL18\nL97\nR76\nL51\nL51\nL27\nR29\nR50\nR27\nR923\nL29\nL571\nL54\nL81\nL65\nR40\nL40\nR53\nR47\nL171\nL363\nL66\nL24\nL90\nR14\nR30\nL30\nL22\nR115\nR33\nL50\nR24\nL91\nR968\nR52\nR71\nR1\nL84\nL17\nL46\nL54\nL31\nR31\nR59\nR81\nL40\nL93\nL7\nL88\nL905\nR93\nR18\nL120\nR90\nL88\nR43\nL27\nR6\nR95\nL35\nR918\nR53\nR97\nL25\nR34\nL72\nL64\nR77\nL48\nL52\nL58\nL2\nR14\nR46\nR65\nR67\nL32\nR739\nL78\nR39\nL53\nL10\nL892\nR91\nL36\nR88\nL546\nR65\nL7\nL42\nL44\nL842\nL6\nR34\nL91\nR7\nL65\nL30\nR93\nL914\nL3\nL123\nL920\nR49\nL24\nL79\nL28\nL72\nR11\nL90\nL64\nL8\nL93\nR44\nR67\nL55\nL643\nL687\nR691\nR65\nR2\nL82\nL273\nR715\nR5\nL5\nR573\nR79\nR94\nL552\nR571\nR53\nR65\nR17\nL88\nR64\nR924\nL281\nL683\nL311\nL82\nL43\nR53\nL72\nR49\nR70\nR59\nR398\nL40\nR83\nR77\nL77\nL17\nR117\nR14\nL97\nR83\nL868\nL72\nL60\nL35\nR225\nR573\nR42\nL5\nL62\nR55\nR63\nL50\nL6\nR93\nL56\nR63\nL271\nL29\nL30\nR67\nL9\nR8\nR384\nR41\nL52\nR964\nL694\nL262\nL50\nR37\nR96\nL649\nL76\nR25\nL212\nL5\nR84\nL7\nR55\nR85\nR36\nL36\nL407\nL93\nL88\nL77\nL74\nR39\nR38\nL38\nR97\nL79\nR82\nL96\nL4\nR490\nL92\nR230\nR570\nR2\nR31\nR90\nL21\nR625\nR67\nL52\nL40\nR3\nL3\nR10\nL10\nL68\nR68\nL84\nL62\nL98\nL76\nR85\nR30\nR353\nR59\nL30\nL77\nL765\nL35\nR208\nL83\nL25\nL15\nL85\nL53\nR53\nR94\nR106\nR188\nR712\nR95\nR5\nL781\nR73\nR34\nR22\nL20\nR72\nR267\nL67\nR27\nL761\nL1\nR35\nR417\nR83\nL65\nR66\nL74\nR73\nL51\nR70\nR15\nL34\nL492\nR61\nL57\nL12\nL29\nR94\nR55\nL95\nR75\nR51\nR78\nL775\nL34\nL20\nR88\nL88\nR54\nL979\nL873\nR90\nR17\nR45\nL31\nL23\nR17\nR683\nL52\nR454\nL12\nL92\nR45\nR91\nR84\nR34\nL93\nL47\nL13\nR83\nL215\nR27\nL77\nL17\nR66\nR91\nR587\nL778\nR34\nR37\nL25\nR427\nL37\nL84\nL19\nR46\nR682\nL23\nL76\nL41\nL69\nR3\nL456\nR674\nR27\nR21\nR313\nR46\nR99\nL3\nL78\nL64\nL65\nR265\nL21\nL23\nR72\nR38\nL73\nL122\nR23\nL6\nL80\nL208\nR266\nR126\nL92\nR57\nL873\nL84\nL1\nL53\nL46\nR46\nL46\nR40\nL9\nR27\nL2\nL56\nL84\nR84\nR540\nR79\nL24\nR757\nR871\nL36\nL39\nL79\nR31\nR67\nL280\nL135\nR42\nR6\nR20\nL80\nR30\nL960\nL78\nR24\nL56\nL91\nL9\nL94\nR76\nR18\nL3\nR57\nR80\nR30\nR83\nR53\nR91\nL50\nR59\nL54\nL76\nL80\nL71\nR81\nL74\nR82\nL708\nR633\nL33\nL27\nR21\nL94\nL41\nL59\nR32\nR10\nR58\nL611\nR10\nR97\nL236\nR740\nL87\nR15\nL78\nR15\nR35\nR48\nL685\nR26\nL51\nL14\nL58\nR12\nR76\nR58\nR78\nL65\nR77\nR67\nL297\nL72\nR23\nR844\nR33\nR8\nR92\nR5\nL5\nL35\nR35\nL99\nL879\nL" <> ...}
+```
+
+```elixir
+rotations =
+  puzzle_input
+  |> String.split("\n")
+  |> Enum.map(fn <<dir::binary-size(1), nStr::binary>> -> 
+    {String.to_atom(dir), String.to_integer(nStr)} 
+    end)
+
+rotate = fn
+    curr, {:L, n} -> curr - n
+    curr, {:R, n} -> curr + n
+  end
+
+start_positions = 
+  rotations
+  |> Enum.scan(50, fn rotation, curr ->
+    rotate.(curr, rotation)
+    |> Integer.mod(100)
+  end)
+  |> List.insert_at(0, 50)
+
+start_positions |> Enum.count(& &1 == 0)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+969
+```
+
+## Part 2
+
+You're sure that's the right password, but the door won't open. You knock, but nobody answers. You build a snowman while you think.
+
+As you're rolling the snowballs for your snowman, you find another security document that must have fallen into the snow:
+
+"Due to newer security protocols, please use _password method <span title="You should have seen the chaos when the Elves overflowed their 32-bit password method counter.">0x434C49434B</span>_ until further notice."
+
+You remember from the training seminar that "method 0x434C49434B" means you're actually supposed to count the number of times _any click_ causes the dial to point at `0`, regardless of whether it happens during a rotation or at the end of one.
+
+Following the same rotations as in the above example, the dial points at zero a few extra times during its rotations:
+
+* The dial starts by pointing at `50`.
+* The dial is rotated `L68` to point at `82`; during this rotation, it points at `0` _once_.
+* The dial is rotated `L30` to point at `52`.
+* The dial is rotated `R48` to point at _`0`_.
+* The dial is rotated `L5` to point at `95`.
+* The dial is rotated `R60` to point at `55`; during this rotation, it points at `0` _once_.
+* The dial is rotated `L55` to point at _`0`_.
+* The dial is rotated `L1` to point at `99`.
+* The dial is rotated `L99` to point at _`0`_.
+* The dial is rotated `R14` to point at `14`.
+* The dial is rotated `L82` to point at `32`; during this rotation, it points at `0` _once_.
+
+In this example, the dial points at `0` three times at the end of a rotation, plus three more times during a rotation. So, in this example, the new password would be _`6`_.
+
+Be careful: if the dial were pointing at `50`, a single rotation like `R1000` would cause the dial to point at `0` ten times before returning back to `50`!
+
+Using password method 0x434C49434B, _what is the password to open the door?_
+
+```elixir
+[start_positions, rotations]
+|> Enum.zip_with(fn [pos, rotation] -> 
+  endpoint = rotate.(pos, rotation)
+  abs(div(endpoint, 100)) + if(endpoint <= 0 && pos > 0, do: 1, else: 0)
+end)
+|> Enum.sum()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+5887
+```
+
+<!-- livebook:{"offset":11808,"stamp":{"token":"XCP.W-ng_35ZXVUyzZ_nUzR1CmPqFFQx0VgSxNnMYXrH7KjNkHJy0W7ZCeEo_Z99eUcRVGVN9gB6nY77UZfQl98YROr6xakYtIjySIGqaeSEmgMiLPryyzjM_GCW","version":2}} -->
