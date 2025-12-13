@@ -1,0 +1,247 @@
+# Day 9: Movie Theater
+
+```elixir
+Mix.install([
+  {:kino_aoc, "~> 0.1.7"},
+  {:tucan, "~> 0.5.1"},
+  {:kino_vega_lite, "~> 0.1.8"}
+])
+```
+
+## Part One
+
+You <span title="wheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee">slide down</span> the [firepole](https://en.wikipedia.org/wiki/Fireman%27s_pole) in the corner of the playground and land in the North Pole base movie theater!
+
+The movie theater has a big tile floor with an interesting pattern. Elves here are redecorating the theater by switching out some of the square tiles in the big grid they form. Some of the tiles are _red_; the Elves would like to find the largest rectangle that uses red tiles for two of its opposite corners. They even have a list of where the red tiles are located in the grid (your puzzle input).
+
+For example:
+
+```
+7,1
+11,1
+11,7
+9,7
+9,5
+2,5
+2,3
+7,3
+```
+
+Showing red tiles as `#` and other tiles as `.`, the above arrangement of red tiles would look like this:
+
+```
+..............
+.......#...#..
+..............
+..#....#......
+..............
+..#......#....
+..............
+.........#.#..
+..............
+```
+
+You can choose any two red tiles as the opposite corners of your rectangle; your goal is to find the largest rectangle possible.
+
+For example, you could make a rectangle (shown as `O`) with an area of `24` between `2,5` and `9,7`:
+
+```
+..............
+.......#...#..
+..............
+..#....#......
+..............
+..OOOOOOOO....
+..OOOOOOOO....
+..OOOOOOOO.#..
+..............
+```
+
+Or, you could make a rectangle with area `35` between `7,1` and `11,7`:
+
+```
+..............
+.......OOOOO..
+.......OOOOO..
+..#....OOOOO..
+.......OOOOO..
+..#....OOOOO..
+.......OOOOO..
+.......OOOOO..
+..............
+```
+
+You could even make a thin rectangle with an area of only `6` between `7,3` and `2,3`:
+
+```
+..............
+.......#...#..
+..............
+..OOOOOO......
+..............
+..#......#....
+..............
+.........#.#..
+..............
+```
+
+Ultimately, the largest rectangle you can make in this example has area _`50`_. One way to do this is between `2,5` and `11,1`:
+
+```
+..............
+..OOOOOOOOOO..
+..OOOOOOOOOO..
+..OOOOOOOOOO..
+..OOOOOOOOOO..
+..OOOOOOOOOO..
+..............
+.........#.#..
+..............
+```
+
+Using two red tiles as opposite corners, _what is the largest area of any rectangle you can make?_
+
+<!-- livebook:{"attrs":"eyJhc3NpZ25fdG8iOiJwdXp6bGVfaW5wdXQiLCJkYXkiOiI5Iiwic2Vzc2lvbl9zZWNyZXQiOiJBT0MyMDI1X1NFU1NJT04iLCJ5ZWFyIjoiMjAyNSJ9","chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} =
+  KinoAOC.download_puzzle("2025", "9", System.fetch_env!("LB_AOC2025_SESSION"))
+```
+
+```elixir
+red_squares = 
+  puzzle_input
+  |> String.split("\n")
+  |> Enum.map(fn s -> String.split(s, ",") |> Enum.map(&String.to_integer/1) |> then(fn [x,y] -> {x,y} end) end)
+
+red_squares_plot = 
+  Tucan.layers([
+    Tucan.Geometry.polyline(red_squares, line_color: "green", fill_color: "green"),
+    Tucan.scatter(Enum.map(red_squares, fn {x,y} -> %{x: x, y: y} end), "x", "y",
+      point_shape: "square",
+      point_color: "red",
+      zoomable: true, 
+      width: 600, 
+      height: 600)
+  ])
+```
+
+```elixir
+normalize_rect = fn [{x1, y1}, {x2, y2}] -> [{min(x1,x2), min(y1,y2)}, {max(x1,x2), max(y1,y2)}] end
+rectangle_size = fn [{x1,y1},{x2,y2}] -> (abs(x2 - x1) + 1) * (abs(y2 - y1) + 1) end
+
+rectangles = 
+  Enum.uniq(for r1 <- red_squares, r2 <- red_squares, r1 != r2, do: normalize_rect.([r1,r2]))
+  |> Enum.sort_by(rectangle_size, :desc)
+  
+max_rectangle = [r1, r2] = hd(rectangles)
+draw_rect = fn [r1, r2] -> Tucan.Geometry.rectangle(r1, r2) end
+
+IO.inspect(rectangle_size.(max_rectangle))
+
+Tucan.layers([
+  red_squares_plot,
+  draw_rect.(max_rectangle)
+])
+```
+
+The Elves just remembered: they can only switch out tiles that are _red_ or _green_. So, your rectangle can only include red or green tiles.
+
+In your list, every red tile is connected to the red tile before and after it by a straight line of _green tiles_. The list wraps, so the first red tile is also connected to the last red tile. Tiles that are adjacent in your list will always be on either the same row or the same column.
+
+Using the same example as before, the tiles marked `X` would be green:
+
+```
+..............
+.......#XXX#..
+.......X...X..
+..#XXXX#...X..
+..X........X..
+..#XXXXXX#.X..
+.........X.X..
+.........#X#..
+..............
+```
+
+In addition, all of the tiles _inside_ this loop of red and green tiles are _also_ green. So, in this example, these are the green tiles:
+
+```
+..............
+.......#XXX#..
+.......XXXXX..
+..#XXXX#XXXX..
+..XXXXXXXXXX..
+..#XXXXXX#XX..
+.........XXX..
+.........#X#..
+..............
+```
+
+The remaining tiles are never red nor green.
+
+The rectangle you choose still must have red tiles in opposite corners, but any other tiles it includes must now be red or green. This significantly limits your options.
+
+For example, you could make a rectangle out of red and green tiles with an area of `15` between `7,3` and `11,1`:
+
+```
+..............
+.......OOOOO..
+.......OOOOO..
+..#XXXXOOOOO..
+..XXXXXXXXXX..
+..#XXXXXX#XX..
+.........XXX..
+.........#X#..
+..............
+```
+
+Or, you could make a thin rectangle with an area of `3` between `9,7` and `9,5`:
+
+```
+..............
+.......#XXX#..
+.......XXXXX..
+..#XXXX#XXXX..
+..XXXXXXXXXX..
+..#XXXXXXOXX..
+.........OXX..
+.........OX#..
+..............
+```
+
+The largest rectangle you can make in this example using only red and green tiles has area _`24`_. One way to do this is between `9,5` and `2,3`:
+
+```
+..............
+.......#XXX#..
+.......XXXXX..
+..OOOOOOOOXX..
+..OOOOOOOOXX..
+..OOOOOOOOXX..
+.........XXX..
+.........#X#..
+..............
+```
+
+Using two red tiles as opposite corners, _what is the largest area of any rectangle you can make using only red and green tiles?_
+
+```elixir
+biggest_rectangle = 
+  rectangles
+  |> Enum.find(fn [{xmin, ymin}, {xmax, ymax}] -> 
+    (ymin > 50000 || ymax < 50000) && !Enum.any?(red_squares, fn {x,y} -> 
+      x in xmin+1..xmax-1 && y in ymin+1..ymax-1
+    end)
+  end)
+  
+biggest_rectangle |> rectangle_size.()
+```
+
+```elixir
+Tucan.layers([
+  red_squares_plot,
+  draw_rect.(biggest_rectangle)
+])
+```
+
+<!-- livebook:{"offset":6140,"stamp":{"token":"XCP.Rfkquwo-vAPuH8PRaPj4soTcCmSZ9Qxxng-jSDRWn4K2TWV2cAzgVeHLq1tXbBePezTFcI7R5LPdNK13QnIJDpnyFGPHlk7mPw9og7f6xgm9yv80Sg6xqogN","version":2}} -->
